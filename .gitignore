@@ -1,0 +1,15 @@
+# 虚拟环境目录
+venv/
+
+# Python 编译缓存
+__pycache__/
+*.pyc
+
+# SQLite 数据库文件
+db.sqlite3
+
+# 静态文件收集目录
+staticfiles/
+
+# 环境变量配置文件（包含密钥等敏感信息）
+.env
