@@ -95,7 +95,7 @@ def toggle_favorite(request, pk):
         messages.success(request, f'已收藏「{post.title}」')
 
     # 重定向回当前页面（HTTP_REFERER 是来源页面的 URL）
-    referer = request.META.get('HTTP_REFERER', '/')
+    referer = request.META.get('HTTP_REFERER') or '/'
     return redirect(referer)
 
 # 文件路径：blog/views.py 新增

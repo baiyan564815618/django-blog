@@ -43,39 +43,29 @@
     {% if keyword %}，搜索「{{ keyword }}」{% endif %}
 </p>
 
-<!-- 在 index.html 的文章卡片中加入收藏按钮（footer 区域） -->
-<div class="article-card">
-    <div class="card-content">
-        <span class="card-category">{{ post.category.name }}</span>
-        <h3>{{ post.title }}</h3>
-        <p>{{ post.summary|truncatechars:80 }}</p>
-        <div class="card-footer">
-            <span class="card-date">{{ post.created_at|date:"Y-m-d" }}</span>
-            {% if user.is_authenticated %}
-            <form method="post" action="{% url 'toggle_favorite' post.pk %}" class="fav-form">
-                {% csrf_token %}
-                <button type="submit" class="fav-btn-small">
-                    {% if user in post.favorites.all %}&#x2665;{% else %}♡{% endif %}
-                </button>
-            </form>
-            {% endif %}
-        </div>
-    </div>
-</div>
+
 
 {% if posts %}
     <div class="article-grid">
         {% for post in posts %}
-        <a href="{% url 'post_detail' post.pk %}" class="card-link">
-            <div class="article-card">
+        <div class="article-card">
                 <div class="card-content">
                     <span class="card-category">{{ post.category.name }}</span>
-                    <h3>{{ post.title }}</h3>
+                    <h3><a href="{% url 'post_detail' post.pk %}" class="card-link">{{ post.title }}</a></h3>
                     <p>{{ post.summary|truncatechars:80 }}</p>
-                    <span class="card-date">{{ post.created_at|date:"Y-m-d" }}</span>
+                    <div class="card-footer">
+                        <span class="card-date">{{ post.created_at|date:"Y-m-d" }}</span>
+                        {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'toggle_favorite' post.pk %}" class="fav-form">
+                            {% csrf_token %}
+                            <button type="submit" class="fav-btn-small">
+                                {% if user in post.favorites.all %}&#x2665;{% else %}♡{% endif %}
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-        </a>
         {% endfor %}
     </div>
 {% else %}
