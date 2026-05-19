@@ -84,8 +84,9 @@ def get_database_config():
     # 1. 优先检查 MYSQL_URL 和 DATABASE_URL（Railway 常用格式）
     database_url = os.environ.get('MYSQL_URL') or os.environ.get('DATABASE_URL')
     if database_url:
-        # 支持 mysql:// 和 mysql2:// 格式
-        match = re.match(r'mysql2?://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)', database_url)
+        # 支持 mysql:// 和 mysql2:// 格式，密码中可能包含特殊字符
+        # 格式: mysql://user:password@host:port/database
+        match = re.match(r'mysql2?://([^:]+):(.+)@([^:]+):(\d+)/(.+)', database_url)
         if match:
             return {
                 'ENGINE': 'django.db.backends.mysql',
