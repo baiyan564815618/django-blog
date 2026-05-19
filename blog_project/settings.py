@@ -80,11 +80,11 @@ WSGI_APPLICATION = 'blog_project.wsgi.application'
 import re
 
 def get_database_config():
-    # 优先检查完整的 DATABASE_URL（Railway 常用格式）
+    # 1. 优先检查 DATABASE_URL（Railway 常用格式）
     database_url = os.environ.get('DATABASE_URL')
     if database_url:
-        # 解析 DATABASE_URL: mysql://user:pass@host:port/dbname
-        match = re.match(r'mysql://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)', database_url)
+        # 支持 mysql:// 和 mysql2:// 格式
+        match = re.match(r'mysql2?://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)', database_url)
         if match:
             return {
                 'ENGINE': 'django.db.backends.mysql',
@@ -95,14 +95,32 @@ def get_database_config():
                 'PORT': match.group(4),
             }
     
-    # 兼容其他平台的环境变量命名
+    # 2. 兼容 Railway MySQL 服务的环境变量命名（带下划线版本）
+    # Railway MySQL 通常设置：MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE, MYSQL_HOST, MYSQL_PORT
+    db_user = os.environ.get('MYSQL_USER') or os.environ.get('MYSQLUSER')
+    db_password = os.environ.get('MYSQL_PASSWORD') or os.environ.get('MYSQLPASSWORD')
+    db_name = os.environ.get('MYSQL_DATABASE') or os.environ.get('MYSQLDATABASE')
+    db_host = os.environ.get('MYSQL_HOST') or os.environ.get('MYSQLHOST')
+    db_port = os.environ.get('MYSQL_PORT') or os.environ.get('MYSQLPORT')
+    
+    if db_user and db_password and db_name and db_host:
+        return {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': db_name,
+            'USER': db_user,
+            'PASSWORD': db_password,
+            'HOST': db_host,
+            'PORT': db_port or '3306',
+        }
+    
+    # 3. 兼容其他平台的环境变量命名
     return {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('MYSQLDATABASE') or os.environ.get('DATABASE_NAME', 'blog'),
-        'USER': os.environ.get('MYSQLUSER') or os.environ.get('DATABASE_USER', 'root'),
-        'PASSWORD': os.environ.get('MYSQLPASSWORD') or os.environ.get('DATABASE_PASSWORD', 'root'),
-        'HOST': os.environ.get('MYSQLHOST') or os.environ.get('DATABASE_HOST', '127.0.0.1'),
-        'PORT': os.environ.get('MYSQLPORT') or os.environ.get('DATABASE_PORT', '3307'),
+        'NAME': os.environ.get('DATABASE_NAME', 'blog'),
+        'USER': os.environ.get('DATABASE_USER', 'root'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'root'),
+        'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DATABASE_PORT', '3307'),
     }
 
 DATABASES = {
