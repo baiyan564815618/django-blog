@@ -76,16 +76,37 @@ TEMPLATES = [
 WSGI_APPLICATION = 'blog_project.wsgi.application'
 
 
-# 优先读取 Railway 自动注入的变量，不存在则用本地配置
-DATABASES = {
-    'default': {
+# 兼容多种平台的数据库配置（Railway、本地等）
+import re
+
+def get_database_config():
+    # 优先检查完整的 DATABASE_URL（Railway 常用格式）
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url:
+        # 解析 DATABASE_URL: mysql://user:pass@host:port/dbname
+        match = re.match(r'mysql://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)', database_url)
+        if match:
+            return {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': match.group(5),
+                'USER': match.group(1),
+                'PASSWORD': match.group(2),
+                'HOST': match.group(3),
+                'PORT': match.group(4),
+            }
+    
+    # 兼容其他平台的环境变量命名
+    return {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('MYSQLDATABASE', 'blog'),
-        'USER': os.environ.get('MYSQLUSER', 'root'),
-        'PASSWORD': os.environ.get('MYSQLPASSWORD', 'root'),
-        'HOST': os.environ.get('MYSQLHOST', '127.0.0.1'),
-        'PORT': os.environ.get('MYSQLPORT', '3307'),
+        'NAME': os.environ.get('MYSQLDATABASE') or os.environ.get('DATABASE_NAME', 'blog'),
+        'USER': os.environ.get('MYSQLUSER') or os.environ.get('DATABASE_USER', 'root'),
+        'PASSWORD': os.environ.get('MYSQLPASSWORD') or os.environ.get('DATABASE_PASSWORD', 'root'),
+        'HOST': os.environ.get('MYSQLHOST') or os.environ.get('DATABASE_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('MYSQLPORT') or os.environ.get('DATABASE_PORT', '3307'),
     }
+
+DATABASES = {
+    'default': get_database_config()
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
