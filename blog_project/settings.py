@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'blog_project.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-if os.environ.get('RAILWAY_ENVIRONMENT'):
+if os.environ.get('MYSQLHOST'):
     # Railway 生产环境配置
     DATABASES = {
         'default': {
